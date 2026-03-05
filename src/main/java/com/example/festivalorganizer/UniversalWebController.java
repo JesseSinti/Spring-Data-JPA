@@ -2,6 +2,7 @@ package com.example.festivalorganizer;
 
 import com.example.festivalorganizer.repository.ArtistRepository;
 import com.example.festivalorganizer.repository.FestivalRepository;
+import com.example.festivalorganizer.repository.StageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +18,10 @@ public class UniversalWebController {
     @Autowired
     private ArtistRepository artistRepo;
 
+    @Autowired
+    private StageRepository stageRepo;
+
+
     @GetMapping
     public String homepage(Model model) {
         model.addAttribute("allFestivals", festivalRepo.findAll());
@@ -24,6 +29,7 @@ public class UniversalWebController {
 
         model.addAttribute("newFestival", new Festival());
         model.addAttribute("newArtist", new Artist());
+        model.addAttribute("newStage", new Stage());
         return "home_page";
     }
 
@@ -40,6 +46,15 @@ public class UniversalWebController {
         artistRepo.save(artist);
         return "redirect:/home";
 }
+
+// Stage Add
+    @PostMapping("/addStage")
+    public String createStage(@ModelAttribute("newStage") Stage stage, @RequestParam("festivalId") Long festivalId) {
+        Festival festival = festivalRepo.findById(festivalId).orElseThrow();
+        stage.setFestival(festival);
+        stageRepo.save(stage);
+        return "redirect:/home";
+    }
 
 // Festival Search
     @GetMapping("/getFestival/{id}")
@@ -77,6 +92,16 @@ public class UniversalWebController {
         return "redirect:/home";
     }
 
+//    Stage Update
+    @PutMapping("/updateStage/{id}")
+    public String updateStage(@PathVariable Long id, @ModelAttribute("newStage") Stage details) {
+        Stage stage = stageRepo.findById(id).orElseThrow();
+        stage.setName(details.getName());
+        stage.setCapacity(details.getCapacity());
+        stageRepo.save(stage);
+        return "redirect:/home";
+    }
+
 //    Festival Delete
     @GetMapping("/deleteFestival/{id}")
     public String deleteFestival(@PathVariable Long id) {
@@ -88,6 +113,13 @@ public class UniversalWebController {
     @GetMapping("/deleteArtist/{id}")
     public String deleteArtist(@PathVariable Long id) {
         artistRepo.deleteById(id);
+        return "redirect:/home";
+    }
+
+//    Stage Delete
+    @GetMapping("/deleteStage/{id}")
+    public String deleteStage(@PathVariable Long id) {
+        stageRepo.deleteById(id);
         return "redirect:/home";
     }
 

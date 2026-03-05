@@ -10,6 +10,7 @@
         .navbar-brand { font-weight: 800; letter-spacing: 1px; }
         .card { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .table th { background-color: #f8f9fa; text-transform: uppercase; font-size: 0.85rem; color: #6c757d; }
+        .stage-badge { font-size: 0.7rem; cursor: default; }
     </style>
 </head>
 <body>
@@ -23,10 +24,10 @@
 <div class="container mb-5">
 
     <ul class="nav nav-pills mb-4" id="dashboardTabs" role="tablist">
-        <li class="nav-item" role="presentation">
+        <li class="nav-item">
             <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#festivalsTab">🎸 Manage Festivals</button>
         </li>
-        <li class="nav-item" role="presentation">
+        <li class="nav-item">
             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#artistsTab">🎤 Manage Artists</button>
         </li>
     </ul>
@@ -34,7 +35,6 @@
     <div class="tab-content" id="dashboardTabsContent">
 
         <div class="tab-pane fade show active" id="festivalsTab">
-
             <div class="card mb-4 border-top border-primary border-4">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Add New Festival</h5>
@@ -58,7 +58,7 @@
                         <thead>
                         <tr>
                             <th class="ps-4">ID</th>
-                            <th>Name</th>
+                            <th>Festival & Stages</th>
                             <th>Location</th>
                             <th class="text-end pe-4">Actions</th>
                         </tr>
@@ -66,40 +66,81 @@
                         <tbody>
                         <tr th:each="f : ${allFestivals}">
                             <td class="ps-4 fw-bold text-muted" th:text="${f.id}"></td>
-                            <td class="fw-semibold" th:text="${f.name}"></td>
+                            <td>
+                                <div class="fw-semibold" th:text="${f.name}">Festival Name</div>
+                                <div class="mt-1">
+                                    <span th:each="s : ${f.stages}"
+                                          class="badge rounded-pill bg-light text-primary border border-primary me-1 stage-badge"
+                                          th:text="${s.name}"></span>
+                                    <small th:if="${#lists.isEmpty(f.stages)}" class="text-muted d-block" style="font-size: 0.7rem;">No stages assigned</small>
+                                </div>
+                            </td>
                             <td><span class="badge bg-light text-dark border" th:text="${f.location}"></span></td>
                             <td class="text-end pe-4">
-                                <a th:href="@{/home/getFestival/{id}(id=${f.id})}" class="btn btn-sm btn-outline-info">View</a>
-                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" th:data-bs-target="'#editFestModal' + ${f.id}">Edit</button>
-                                <a th:href="@{/home/deleteFestival/{id}(id=${f.id})}" class="btn btn-sm btn-outline-danger">Delete</a>
-                            </td>
+                                <a th:href="@{/home/getFestival/{id}(id=${f.id})}" class="btn btn-sm btn-outline-info" title="View Details"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" th:data-bs-target="'#stageModal' + ${f.id}" title="Manage Stages"><i class="bi bi-layers"></i></button>
+                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" th:data-bs-target="'#editFestModal' + ${f.id}"><i class="bi bi-pencil"></i></button>
+                                <a th:href="@{/home/deleteFestival/{id}(id=${f.id})}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
 
-                            <div class="modal fade text-start" th:id="'editFestModal' + ${f.id}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-warning text-dark">
-                                            <h5 class="modal-title">Edit Festival</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <form th:action="@{/home/updateFestival/{id}(id=${f.id})}" th:method="put">
+                                <div class="modal fade text-start" th:id="'stageModal' + ${f.id}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-dark text-white">
+                                                <h5 class="modal-title">Stages for <span th:text="${f.name}"></span></h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
                                             <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Name</label>
-                                                    <input type="text" name="name" th:value="${f.name}" class="form-control" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Location</label>
-                                                    <input type="text" name="location" th:value="${f.location}" class="form-control" required>
-                                                </div>
+                                                <form th:action="@{/home/addStage}" method="post" class="mb-4 p-3 bg-light rounded">
+                                                    <h6 class="mb-2">Quick Add Stage</h6>
+                                                    <input type="hidden" name="festivalId" th:value="${f.id}">
+                                                    <div class="row g-2">
+                                                        <div class="col-8">
+                                                            <input type="text" name="name" class="form-control form-control-sm" placeholder="Stage Name" required>
+                                                        </div>
+                                                        <div class="col-4 d-grid">
+                                                            <button type="submit" class="btn btn-sm btn-primary">Add</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                                <h6>Current Stages</h6>
+                                                <ul class="list-group list-group-flush">
+                                                    <li th:each="s : ${f.stages}" class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                                        <span th:text="${s.name}"></span>
+                                                        <a th:href="@{/home/deleteStage/{id}(id=${s.id})}" class="text-danger"><i class="bi bi-x-circle"></i></a>
+                                                    </li>
+                                                </ul>
                                             </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-warning">Save Changes</button>
-                                            </div>
-                                        </form>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+
+                                <div class="modal fade text-start" th:id="'editFestModal' + ${f.id}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-warning text-dark">
+                                                <h5 class="modal-title">Edit Festival</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form th:action="@{/home/updateFestival/{id}(id=${f.id})}" th:method="put">
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Name</label>
+                                                        <input type="text" name="name" th:value="${f.name}" class="form-control" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Location</label>
+                                                        <input type="text" name="location" th:value="${f.location}" class="form-control" required>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-warning">Save Changes</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
@@ -108,7 +149,6 @@
         </div>
 
         <div class="tab-pane fade" id="artistsTab">
-
             <div class="card mb-4 border-top border-success border-4">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Add New Artist</h5>
@@ -143,37 +183,37 @@
                             <td class="fw-semibold" th:text="${a.name}"></td>
                             <td><span class="badge bg-success" th:text="${a.genre}"></span></td>
                             <td class="text-end pe-4">
-                                <a th:href="@{/home/getArtist/{id}(id=${a.id})}" class="btn btn-sm btn-outline-info">View</a>
-                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" th:data-bs-target="'#editArtistModal' + ${a.id}">Edit</button>
-                                <a th:href="@{/home/deleteArtist/{id}(id=${a.id})}" class="btn btn-sm btn-outline-danger">Delete</a>
-                            </td>
+                                <a th:href="@{/home/getArtist/{id}(id=${a.id})}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" th:data-bs-target="'#editArtistModal' + ${a.id}"><i class="bi bi-pencil"></i></button>
+                                <a th:href="@{/home/deleteArtist/{id}(id=${a.id})}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
 
-                            <div class="modal fade text-start" th:id="'editArtistModal' + ${a.id}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-warning text-dark">
-                                            <h5 class="modal-title">Edit Artist</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                <div class="modal fade text-start" th:id="'editArtistModal' + ${a.id}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-warning text-dark">
+                                                <h5 class="modal-title">Edit Artist</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form th:action="@{/home/updateArtist/{id}(id=${a.id})}" th:method="put">
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Name</label>
+                                                        <input type="text" name="name" th:value="${a.name}" class="form-control" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Genre</label>
+                                                        <input type="text" name="genre" th:value="${a.genre}" class="form-control" required>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-warning">Save Changes</button>
+                                                </div>
+                                            </form>
                                         </div>
-                                        <form th:action="@{/home/updateArtist/{id}(id=${a.id})}" th:method="put">
-                                            <div class="modal-body">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Name</label>
-                                                    <input type="text" name="name" th:value="${a.name}" class="form-control" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Genre</label>
-                                                    <input type="text" name="genre" th:value="${a.genre}" class="form-control" required>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-warning">Save Changes</button>
-                                            </div>
-                                        </form>
                                     </div>
                                 </div>
-                            </div>
+                            </td>
                         </tr>
                         </tbody>
                     </table>
