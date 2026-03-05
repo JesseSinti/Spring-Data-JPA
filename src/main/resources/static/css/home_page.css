@@ -1,0 +1,17 @@
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+    transition: 0.3s;
+}

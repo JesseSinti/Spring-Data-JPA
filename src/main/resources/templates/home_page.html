@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>SonicHorizon | Festival Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/festivals.css}">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">SonicHorizon</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Current Festival Lineup</h2>
+        <a href="/festivals/new" class="btn btn-primary">+ Add New Festival</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Festival Name</th>
+                    <th>Location</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="f : ${allFestivals}">
+                    <td th:text="${f.id}" class="fw-bold">1</td>
+                    <td th:text="${f.name}">Coachella</td>
+                    <td th:text="${f.location}">California</td>
+                    <td class="text-center">
+                        <a th:href="@{/festivals/{id}(id=${f.id})}" class="btn btn-sm btn-outline-info">Details</a>
+                        <a th:href="@{/festivals/edit/{id}(id=${f.id})}" class="btn btn-sm btn-outline-warning">Edit</a>
+                        <a th:href="@{/festivals/delete/{id}(id=${f.id})}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
